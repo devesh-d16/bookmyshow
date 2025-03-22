@@ -1,26 +1,40 @@
 package com.devesh.bookmyshow.entity;
 
+import com.devesh.bookmyshow.enums.ShowTimingType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @Getter
 @Setter
+@Entity
+@Table(name = "show_detail")
 public class Show {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long showId;
 
+    @ManyToOne
+    @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
 
+    @Column(nullable = false)
     private LocalDateTime startTime;
-    private LocalDateTime endTime;
 
-    private List<Seat> seats;
-    private int availableSeats;
+    @Column(nullable = false)
+    private LocalDateTime endingTime;
 
-    private double price;
+    private ShowTimingType showTimingType;
+
+    @OneToMany(mappedBy = "show", cascade = CascadeType.ALL)
+    private List<ShowSeat> showSeats;
+
+    @ManyToOne
+    @JoinColumn(name = "screen_id", nullable = false)
+    private Screen screen;
 
 }
