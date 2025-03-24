@@ -22,19 +22,17 @@ public class Show {
     @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
 
+    @ManyToOne
+    @JoinColumn(name = "screen_id", nullable = false)
+    private Screen screen;
+
     @Column(nullable = false)
     private LocalDateTime startTime;
 
     @Column(nullable = false)
     private LocalDateTime endingTime;
 
-    private ShowTimingType showTimingType;
-
-    @OneToMany(mappedBy = "show", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "show", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ShowSeat> showSeats;
-
-    @ManyToOne
-    @JoinColumn(name = "screen_id", nullable = false)
-    private Screen screen;
-
 }
+

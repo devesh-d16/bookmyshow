@@ -9,8 +9,8 @@ import java.util.List;
 
 @Getter
 @Setter
-@Entity
 @Table(name = "ticket_detail")
+@Entity
 public class Ticket {
 
     @Id
@@ -20,23 +20,22 @@ public class Ticket {
     @Column(nullable = false)
     private LocalDateTime bookingTime;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+            name = "ticket_show_seat",
+            joinColumns = @JoinColumn(name = "ticket_id"),
+            inverseJoinColumns = @JoinColumn(name = "show_seat_id")
+    )
     private List<ShowSeat> showSeats;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
 
     @ManyToOne
-    private Theater theater;
-
-    @ManyToOne
-    private Screen screen;
-
-    @ManyToOne
-    private Show show;
-
+    @JoinColumn(name = "show_id", nullable = false)
+    private Show show; // FIXED: Removed redundant theater & screen references
 }

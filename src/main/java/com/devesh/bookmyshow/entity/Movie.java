@@ -32,6 +32,7 @@ public class Movie {
     @Column(nullable = false)
     private LocalDateTime releaseDate;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Show> shows;
 }
+

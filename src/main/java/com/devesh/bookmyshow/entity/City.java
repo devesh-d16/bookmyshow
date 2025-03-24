@@ -1,5 +1,6 @@
 package com.devesh.bookmyshow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -17,7 +18,7 @@ public class City {
     @Column(nullable = false, unique = true)
     private String cityName;
 
-    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "city", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonIgnore
     private List<Theater> theaters;
-
 }

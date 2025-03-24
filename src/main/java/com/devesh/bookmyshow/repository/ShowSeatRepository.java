@@ -1,10 +1,9 @@
 package com.devesh.bookmyshow.repository;
 
-import com.devesh.bookmyshow.entity.Movie;
+import com.devesh.bookmyshow.entity.ShowSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MovieRepository extends JpaRepository<Movie, Long> {
-    Movie getMovieByTitle(String title);
+public interface ShowSeatRepository extends JpaRepository<ShowSeat, Long> {
 }

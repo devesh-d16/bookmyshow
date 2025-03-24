@@ -19,9 +19,11 @@ public class ShowSeat {
     @Column(nullable = false)
     private int seatNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SeatType seatType;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SeatStatus seatStatus;
 
@@ -29,11 +31,14 @@ public class ShowSeat {
     private Double price;
 
     @ManyToOne
-    @JoinColumn(name = "screen_seat_id", nullable = false)
-    private ScreenSeat screenSeat;
-
-    @ManyToOne
     @JoinColumn(name = "show_id", nullable = false)
     private Show show;
 
+    @ManyToOne
+    @JoinColumn(name = "screen_id", nullable = false)
+    private Screen screen; // FIXED: Now linked to screen directly
+
+    @Version
+    private Long version;
 }
+

@@ -9,4 +9,6 @@ public interface TheaterRepository extends JpaRepository<Theater, Long> {
     void deleteByTheaterName(String theaterName);
 
     Theater getTheaterByTheaterName(String theaterName);
+
+    Theater getTheaterByTheaterId(Long theaterId);
 }

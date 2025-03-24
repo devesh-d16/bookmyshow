@@ -15,7 +15,6 @@ public class CityService {
 
     private final CityRepository cityRepository;
 
-
     public City saveCity(City newCity) {
         return cityRepository.save(newCity);
     }

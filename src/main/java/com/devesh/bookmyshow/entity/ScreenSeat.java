@@ -2,9 +2,11 @@ package com.devesh.bookmyshow.entity;
 
 
 import com.devesh.bookmyshow.enums.SeatType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.util.List;
 import java.util.Map;
 
@@ -25,18 +27,9 @@ public class ScreenSeat {
 
     @OneToOne
     @JoinColumn(name = "screen_id", nullable = false)
+    @JsonIgnore
     private Screen screen;
 
-    @ElementCollection
-    @CollectionTable(name = "screen_seat_details", joinColumns = @JoinColumn(name = "seat_id"))
-    @MapKeyColumn(name = "seat_type")
-    @Column(name = "seat_count")
-    private Map<SeatType, Integer> seatCountByType;
-
-    @ElementCollection
-    @CollectionTable(name = "seat_pricing", joinColumns = @JoinColumn(name = "seat_id"))
-    @MapKeyColumn(name = "seat_type")
-    @Column(name = "base_price")
-    private Map<SeatType, Double> seatPricingByType;
-
+    @OneToMany(mappedBy = "screenSeat", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ScreenSeatType> seatTypes;
 }

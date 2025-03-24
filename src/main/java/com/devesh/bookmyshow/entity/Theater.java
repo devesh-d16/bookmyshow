@@ -1,5 +1,6 @@
 package com.devesh.bookmyshow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,10 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Builder
 @Table(name = "theater_detail")
-@NoArgsConstructor
-@AllArgsConstructor
 public class Theater {
 
     @Id
@@ -25,7 +23,7 @@ public class Theater {
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
-    @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Screen> screens;
-
 }

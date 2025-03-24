@@ -21,12 +21,18 @@ public class TheaterController {
 
     @PutMapping("/{theaterName}")
     public ResponseEntity<?> updateTheater(@RequestBody TheaterDTO theater, @PathVariable String theaterName){
-        return new ResponseEntity<>(theaterService.updateTheater(theater, theaterName), HttpStatus.CREATED);
+        return new ResponseEntity<>(theaterService.updateTheater(theater, theaterName),HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{theaterName}")
     public ResponseEntity<?> deleteTheater(@PathVariable String theaterName){
         theaterService.deleteTheater(theaterName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+
+    @GetMapping("/{theaterName}/screens")
+    public ResponseEntity<?> findAllScreenByTheater(@PathVariable String theaterName){
+        return new ResponseEntity<>(theaterService.getAllScreenByTheater(theaterName), HttpStatus.OK);
     }
 }

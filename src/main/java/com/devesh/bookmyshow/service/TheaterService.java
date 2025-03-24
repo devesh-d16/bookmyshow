@@ -2,6 +2,7 @@ package com.devesh.bookmyshow.service;
 
 import com.devesh.bookmyshow.dto.TheaterDTO;
 import com.devesh.bookmyshow.entity.City;
+import com.devesh.bookmyshow.entity.Screen;
 import com.devesh.bookmyshow.entity.Theater;
 import com.devesh.bookmyshow.repository.TheaterRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +39,15 @@ public class TheaterService {
         theaterUpdate.setCity(city);
         theaterUpdate.setTheaterName(theater.getTheaterName());
         return theaterRepository.save(theaterUpdate);
+    }
+
+    public List<Screen> getAllScreenByTheater(String theaterName) {
+        Theater theater = theaterRepository.getTheaterByTheaterName(theaterName);
+        return theater.getScreens();
+    }
+
+
+    public Theater findTheaterById(Long theaterId) {
+        return theaterRepository.getTheaterByTheaterId(theaterId);
     }
 }

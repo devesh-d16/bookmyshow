@@ -1,5 +1,6 @@
 package com.devesh.bookmyshow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,10 +23,10 @@ public class Screen {
     @JoinColumn(name = "theater_id", nullable = false)
     private Theater theater;
 
-    @OneToOne(mappedBy = "screen", cascade = CascadeType.ALL)
-    private ScreenSeat screenSeat;
-
-    @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Show> shows;
 
+    @OneToOne(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ScreenSeat screenSeat;
 }
