@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Builder
@@ -16,5 +17,5 @@ public class MovieDTO {
     private String language;
     private String description;
     private Double rating;
-    private LocalDate releaseDate;
+    private Date releaseDate;
 }

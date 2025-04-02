@@ -43,8 +43,8 @@ public class ScreenService {
         if (screenDTO.getScreenName() == null || screenDTO.getScreenName().isBlank()) {
             throw new InvalidRequestException("Screen name cannot be blank");
         }
-        if (screenDTO.getScreenSeats() == null || screenDTO.getScreenSeats().isEmpty()) {
-            throw new InvalidRequestException("Screen must have at least one seat configuration.");
+        if (screenDTO.getScreenSeats() == null) {
+            throw new InvalidRequestException("Screen must have seat configuration.");
         }
     }
 
@@ -54,7 +54,7 @@ public class ScreenService {
         screen.setTheater(theater);
 
         // Use the first seat configuration
-        ScreenSeatDTO seatDTO = screenDTO.getScreenSeats().get(0);
+        ScreenSeatDTO seatDTO = screenDTO.getScreenSeats();
         ScreenSeat screenSeat = buildScreenSeat(seatDTO, screen);
         screen.setScreenSeat(screenSeat);
 

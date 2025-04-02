@@ -11,5 +11,5 @@ import java.util.List;
 public class ScreenDTO {
     private String screenName;
     private Long theaterId;
-    private List<ScreenSeatDTO> screenSeats;
+    private ScreenSeatDTO screenSeats;
 }

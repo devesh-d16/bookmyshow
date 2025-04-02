@@ -1,8 +1,10 @@
 package com.devesh.bookmyshow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -33,8 +35,9 @@ public class Movie {
     private Double rating;
 
     @Column(nullable = false)
-    private LocalDate releaseDate; // changed to LocalDate
+    private Date releaseDate;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Show> shows;
 }

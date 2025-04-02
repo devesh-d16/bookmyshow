@@ -1,6 +1,7 @@
 package com.devesh.bookmyshow.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class Screen {
     private Theater theater;
 
     @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Show> shows;
 
     @OneToOne(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)

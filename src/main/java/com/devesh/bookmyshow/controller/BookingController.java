@@ -19,7 +19,6 @@ public class BookingController {
 
     private final BookingService bookingService;
 
-    // Book ticket endpoint
     @PostMapping("/book")
     public ResponseEntity<TicketResponseDTO> bookTicket(@RequestBody BookingRequestDTO bookingRequest) {
         TicketResponseDTO ticketResponse = bookingService.bookTicket(bookingRequest);

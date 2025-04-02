@@ -46,9 +46,6 @@ public class MoviePersistence implements IPersistence<Movie> {
         return movieRepository.findAll();
     }
 
-    public List<Movie> getAll() {
-        return movieRepository.findAll();
-    }
 
     public Movie findByTitle(String title) {
         return movieRepository.getMovieByTitle(title);
