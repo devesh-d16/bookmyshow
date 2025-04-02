@@ -4,10 +4,10 @@ import com.devesh.bookmyshow.enums.SeatStatus;
 import com.devesh.bookmyshow.enums.SeatType;
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class ShowSeatDTO {
     private Long seatId;
     private int seatNumber;

@@ -1,24 +1,25 @@
 package com.devesh.bookmyshow.service;
 
-
 import com.devesh.bookmyshow.dto.ShowDTO;
 import com.devesh.bookmyshow.dto.ShowResponseDTO;
 import com.devesh.bookmyshow.dto.ShowSeatDTO;
 import com.devesh.bookmyshow.entity.*;
 import com.devesh.bookmyshow.enums.SeatStatus;
 import com.devesh.bookmyshow.enums.ShowTimingType;
+import com.devesh.bookmyshow.exceptions.InvalidRequestException;
 import com.devesh.bookmyshow.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ShowService {
 
     private final MovieRepository movieRepository;
@@ -26,12 +27,15 @@ public class ShowService {
     private final ShowRepository showRepository;
     private final ShowSeatRepository showSeatRepository;
 
+    @Transactional
     public ShowResponseDTO createShow(ShowDTO showDTO) {
         Movie movie = movieRepository.findById(showDTO.getMovieId())
-                .orElseThrow(() -> new RuntimeException("Movie not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Movie not found"));
 
         Screen screen = screenRepository.findById(showDTO.getScreenId())
-                .orElseThrow(() -> new RuntimeException("Screen not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Screen not found"));
+
+        validateShowTiming(showDTO, movie, screen);
 
         Show show = new Show();
         show.setMovie(movie);
@@ -40,39 +44,59 @@ public class ShowService {
         show.setEndingTime(showDTO.getEndingTime());
 
         Show savedShow = showRepository.save(show);
-
         List<ShowSeat> showSeats = generateShowSeats(savedShow, screen);
         showSeatRepository.saveAll(showSeats);
 
         return mapToShowResponseDTO(savedShow, showSeats);
     }
 
-    private List<ShowSeat> generateShowSeats(Show show, Screen screen) {
-        List<ShowSeat> showSeats = new ArrayList<>();
-
-        if (screen.getScreenSeat() == null || screen.getScreenSeat().getSeatTypes().isEmpty()) {
-            throw new RuntimeException("Screen does not have seat configuration");
+    private void validateShowTiming(ShowDTO showDTO, Movie movie, Screen screen) {
+        if (!showDTO.getStartTime().isBefore(showDTO.getEndingTime())) {
+            throw new InvalidRequestException("Show start time must be before end time.");
         }
 
-        // Get price multiplier from ShowTimingType
+        long showDurationInMinutes = Duration.between(
+                showDTO.getStartTime(), showDTO.getEndingTime()).toMinutes();
+
+        if (showDurationInMinutes < movie.getDuration()) {
+            throw new InvalidRequestException("The show duration (" + showDurationInMinutes +
+                    " minutes) is shorter than the movie duration (" + movie.getDuration() + " minutes).");
+        }
+
+        List<Show> existingShows = showRepository.findByScreen_ScreenId(screen.getScreenId());
+        boolean isOverlap = existingShows.stream().anyMatch(existingShow ->
+                showDTO.getStartTime().isBefore(existingShow.getEndingTime()) &&
+                        showDTO.getEndingTime().isAfter(existingShow.getStartTime())
+        );
+
+        if (isOverlap) {
+            throw new InvalidRequestException("This screen already has a show scheduled during the selected time.");
+        }
+    }
+
+    private List<ShowSeat> generateShowSeats(Show show, Screen screen) {
+        if (screen.getScreenSeat() == null || screen.getScreenSeat().getSeatTypes().isEmpty()) {
+            throw new EntityNotFoundException("Screen does not have seat configuration");
+        }
+
         ShowTimingType showTimingType = ShowTimingType.getShowTimingType(show.getStartTime());
 
-        for (ScreenSeatType seatType : screen.getScreenSeat().getSeatTypes()) {
-            double finalPrice = seatType.getBasePrice() * showTimingType.getPriceMultiplier();
+        return screen.getScreenSeat().getSeatTypes().stream()
+                .flatMap(seatType -> IntStream.rangeClosed(1, seatType.getSeatCount())
+                        .mapToObj(i -> createShowSeat(i, seatType, show, screen, showTimingType)))
+                .collect(Collectors.toList());
+    }
 
-            for (int i = 1; i <= seatType.getSeatCount(); i++) {
-                ShowSeat showSeat = new ShowSeat();
-                showSeat.setSeatNumber(i);
-                showSeat.setSeatType(seatType.getSeatType());
-                showSeat.setSeatStatus(SeatStatus.AVAILABLE);
-                showSeat.setPrice(finalPrice);
-                showSeat.setShow(show);
-                showSeat.setScreen(screen);
-
-                showSeats.add(showSeat);
-            }
-        }
-        return showSeats;
+    private ShowSeat createShowSeat(int seatNumber, ScreenSeatType seatType,
+                                    Show show, Screen screen, ShowTimingType timingType) {
+        ShowSeat showSeat = new ShowSeat();
+        showSeat.setSeatNumber(seatNumber);
+        showSeat.setSeatType(seatType.getSeatType());
+        showSeat.setSeatStatus(SeatStatus.AVAILABLE);
+        showSeat.setPrice(seatType.getBasePrice() * timingType.getPriceMultiplier());
+        showSeat.setShow(show);
+        showSeat.setScreen(screen);
+        return showSeat;
     }
 
     private ShowResponseDTO mapToShowResponseDTO(Show show, List<ShowSeat> showSeats) {
@@ -94,5 +118,9 @@ public class ShowService {
                 showSeat.getSeatStatus(),
                 showSeat.getPrice()
         );
+    }
+
+    public Show getShowById(Long showId) {
+        return showRepository.getShowByShowId(showId);
     }
 }

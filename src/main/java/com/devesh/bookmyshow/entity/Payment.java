@@ -1,14 +1,14 @@
 package com.devesh.bookmyshow.entity;
 
+
 import com.devesh.bookmyshow.enums.PaymentStatus;
 import com.devesh.bookmyshow.enums.PaymentType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "payment_detail")
+@Table(name = "payment")
 public class Payment {
 
     @Id
@@ -30,4 +30,3 @@ public class Payment {
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
 }
-

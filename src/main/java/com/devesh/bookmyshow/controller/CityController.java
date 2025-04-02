@@ -1,7 +1,6 @@
 package com.devesh.bookmyshow.controller;
 
-import com.devesh.bookmyshow.entity.City;
-
+import com.devesh.bookmyshow.dto.CityRequestDTO;
 import com.devesh.bookmyshow.service.CityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,8 +15,8 @@ public class CityController {
     private final CityService cityService;
 
     @PostMapping
-    public ResponseEntity<?> createCity(@RequestBody City newCity){
-        return new ResponseEntity<>(cityService.saveCity(newCity), HttpStatus.CREATED);
+    public ResponseEntity<?> createCity(@RequestBody CityRequestDTO city){
+        return new ResponseEntity<>(cityService.saveCity(city), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -31,7 +30,7 @@ public class CityController {
     }
 
     @PutMapping("/{cityName}")
-    public ResponseEntity<?> updateCity(@PathVariable String cityName, @RequestBody City updatedCity){
+    public ResponseEntity<?> updateCity(@PathVariable String cityName, @RequestBody CityRequestDTO updatedCity){
         return new ResponseEntity<>(cityService.updateCity(cityName, updatedCity), HttpStatus.CREATED);
     }
 

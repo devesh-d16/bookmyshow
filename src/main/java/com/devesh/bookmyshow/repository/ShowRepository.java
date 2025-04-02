@@ -10,4 +10,8 @@ import java.util.List;
 @Repository
 public interface ShowRepository extends JpaRepository<Show, Long> {
     List<Show> findByMovie(Movie movie);
+
+    Show getShowByShowId(Long showId);
+
+    List<Show> findByScreen_ScreenId(Long screenScreenId);
 }

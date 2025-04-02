@@ -4,50 +4,77 @@ import com.devesh.bookmyshow.dto.TheaterDTO;
 import com.devesh.bookmyshow.entity.City;
 import com.devesh.bookmyshow.entity.Screen;
 import com.devesh.bookmyshow.entity.Theater;
+import com.devesh.bookmyshow.exceptions.ResourceNotFoundException;
 import com.devesh.bookmyshow.repository.TheaterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TheaterService {
+
     private final CityService cityService;
     private final TheaterRepository theaterRepository;
 
-    public Theater create(TheaterDTO theaterRequest) {
+    public Theater createTheater(TheaterDTO theaterRequest) {
         City city = cityService.findCity(theaterRequest.getCityName());
+        if (city == null) {
+            throw new ResourceNotFoundException("City not found: " + theaterRequest.getCityName());
+        }
 
         Theater theater = new Theater();
         theater.setTheaterName(theaterRequest.getTheaterName());
         theater.setCity(city);
 
         city.getTheaters().add(theater);
-        cityService.saveCity(city);
 
         return theaterRepository.save(theater);
     }
 
-    public void deleteTheater(String theaterName) {
-        theaterRepository.deleteByTheaterName(theaterName);
+    @Transactional
+    public void deleteTheater(Long theaterId) {
+        // Potentially check if shows are active in the theater
+        theaterRepository.deleteByTheaterId(theaterId);
     }
 
-    public Theater updateTheater(TheaterDTO theater, String theaterName) {
-        Theater theaterUpdate = theaterRepository.getTheaterByTheaterName(theaterName);
-        City city = cityService.findCity(theaterUpdate.getTheaterName());
-        theaterUpdate.setCity(city);
-        theaterUpdate.setTheaterName(theater.getTheaterName());
-        return theaterRepository.save(theaterUpdate);
+    public Theater updateTheater(TheaterDTO theaterDTO, Long theaterId) {
+        Theater theater = theaterRepository.findTheaterByTheaterId(theaterId);
+        if (theater == null) {
+            throw new IllegalArgumentException("Theater not found with ID " + theaterId);
+        }
+
+        City city = cityService.findCity(theaterDTO.getCityName());
+        if (city == null) {
+            throw new ResourceNotFoundException("City not found: " + theaterDTO.getCityName());
+        }
+        theater.setCity(city);
+        theater.setTheaterName(theaterDTO.getTheaterName());
+
+        return theaterRepository.save(theater);
     }
 
-    public List<Screen> getAllScreenByTheater(String theaterName) {
+    public List<Screen> getAllScreensByTheater(String theaterName) {
         Theater theater = theaterRepository.getTheaterByTheaterName(theaterName);
+        if (theater == null) {
+            throw new IllegalArgumentException("Theater with name " + theaterName + " not found.");
+        }
         return theater.getScreens();
     }
 
-
     public Theater findTheaterById(Long theaterId) {
-        return theaterRepository.getTheaterByTheaterId(theaterId);
+        return Optional.ofNullable(theaterRepository.getTheaterByTheaterId(theaterId))
+                .orElseThrow(() -> new IllegalArgumentException("Theater with ID " + theaterId + " not found."));
+    }
+
+    public List<Screen> getAllScreenByTheater(Long theaterId) {
+        Theater theater = theaterRepository.findTheaterByTheaterId(theaterId);
+        if (theater == null) {
+            throw new ResourceNotFoundException("Theater not found with ID " + theaterId);
+        }
+        return theater.getScreens();
     }
 }

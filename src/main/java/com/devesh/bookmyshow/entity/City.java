@@ -2,13 +2,16 @@ package com.devesh.bookmyshow.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "city_detail")
+@Table(name = "city")
 public class City {
 
     @Id
@@ -18,7 +21,15 @@ public class City {
     @Column(nullable = false, unique = true)
     private String cityName;
 
-    @OneToMany(mappedBy = "city", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @CreationTimestamp
+    @JsonIgnore
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @JsonIgnore
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Theater> theaters;
 }

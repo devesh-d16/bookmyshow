@@ -2,14 +2,13 @@ package com.devesh.bookmyshow.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "theater_detail")
+@Table(name = "theater")
 public class Theater {
 
     @Id

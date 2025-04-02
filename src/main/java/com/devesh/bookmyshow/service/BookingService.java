@@ -1,125 +1,102 @@
 package com.devesh.bookmyshow.service;
 
-import com.devesh.bookmyshow.dto.BookTicketRequestDTO;
+import com.devesh.bookmyshow.dto.BookingRequestDTO;
+import com.devesh.bookmyshow.dto.TicketResponseDTO;
 import com.devesh.bookmyshow.entity.*;
 import com.devesh.bookmyshow.enums.*;
 import com.devesh.bookmyshow.exceptions.InvalidRequestException;
-import com.devesh.bookmyshow.repository.ShowRepository;
-import com.devesh.bookmyshow.repository.ShowSeatRepository;
+import com.devesh.bookmyshow.exceptions.ResourceNotFoundException;
 import com.devesh.bookmyshow.repository.TicketRepository;
-import com.devesh.bookmyshow.repository.UserRepository;
-import jakarta.persistence.OptimisticLockException;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BookingService {
 
-    private final ShowSeatRepository showSeatRepository;
-    private final TicketRepository ticketRepository;
-    private final UserRepository userRepository;
-    private final PaymentService paymentService;
-    private final ShowRepository showRepository;
     private final UserService userService;
+    private final CityService cityService;
+    private final MovieService movieService;
+    private final TheaterService theaterService;
     private final ShowService showService;
+    private final SeatService seatService;
+    private final PaymentService paymentService;
+    private final TicketRepository ticketRepository;
 
+    @Transactional
+    public TicketResponseDTO bookTicket(BookingRequestDTO bookingRequest) {
+        // 1. Basic entity lookups
+        User user = userService.getUserById(bookingRequest.getUserId());
+        City city = cityService.findCity(bookingRequest.getCityName());
+        Movie movie = movieService.findMovieByTitle(bookingRequest.getMovieTitle());
+        Theater theater = theaterService.findTheaterById(bookingRequest.getTheaterId());
+        Show show = showService.getShowById(bookingRequest.getShowId());
 
-//    @Transactional
-//    public Ticket bookTickets(BookTicketRequestDTO bookTicketRequestDTO){
-//
-//        User user = userService.findUserByName(bookTicketRequestDTO.getUsername());
-//        Show show = showService.findShowByShowId(bookTicketRequestDTO.getShowId());
-//
-//        SeatType seatType = SeatType.valueOf(bookTicketRequestDTO.getSeatType());
-//        List<ShowSeat> selectedSeats = showSeatRepository.findAllById(bookTicketRequestDTO.getSeatIds());
-//
-//    }
+        // 2. Validate city-theater & show-movie
+        if (!theater.getCity().equals(city)) {
+            throw new InvalidRequestException("The selected theater is not in the correct city.");
+        }
+        if (!show.getMovie().equals(movie)) {
+            throw new InvalidRequestException("The selected movie does not match the show.");
+        }
 
-//        @Transactional
-//        public Ticket bookTickets(Long userId, Long showId, List<Long> seatIds, PaymentType paymentType) {
-//            // Fetch user, show, and seats
-//            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-//            Show show = showRepository.findById(showId).orElseThrow(() -> new RuntimeException("Show not found"));
-//
-//            List<ShowSeat> selectedSeats = showSeatRepository.findAllById(seatIds);
-//
-//            // Ensure seats are available
-//            for (ShowSeat seat : selectedSeats) {
-//                if (seat.getSeatStatus() != SeatStatus.AVAILABLE) {
-//                    throw new RuntimeException("Selected seat " + seat.getSeatNumber() + " is already booked.");
-//                }
-//            }
-//
-//            // Calculate total price based on seat type and timing
-//            double totalPrice = 0.0;
-//            for (ShowSeat seat : selectedSeats) {
-//                ScreenSeat screenSeat = seat.getScreen().getScreenSeat();
-//                ScreenSeatType seatType;
-//
-//                // Base price of the seat based on type
-//                double basePrice = seatType.getBasePrice();
-//
-//                // Timing adjustment
-//                double adjustedPrice = adjustPriceBasedOnTiming(show.getStartTime(), basePrice);
-//                totalPrice += adjustedPrice;
-//
-//                // Mark the seat as booked
-//                seat.setSeatStatus(SeatStatus.BOOKED);
-//                showSeatRepository.save(seat);
-//            }
-//
-//            // Create the ticket
-//            Ticket ticket = new Ticket();
-//            ticket.setBookingTime(LocalDateTime.now());
-//            ticket.setUser(user);
-//            ticket.setShow(show);
-//            ticket.setSeats(selectedSeats);
-//            ticket.setTotalPrice(totalPrice);
-//
-//            // Process payment
-//            Payment payment = paymentService.processPayment(ticket, paymentType);
-//            ticket.setPayment(payment);
-//
-//            // Save ticket and return
-//            ticketRepository.save(ticket);
-//            return ticket;
-//        }
+        // 3. Validate seats
+        List<ShowSeat> selectedSeats = new ArrayList<>();
+        for (Long seatId : bookingRequest.getSeatIds()) {
+            ShowSeat seat = seatService.lockSeat(seatId);
 
+            // Check seat belongs to the same show
+            if (!seat.getShow().equals(show)) {
+                throw new InvalidRequestException("Seat " + seatId + " is not part of the selected show.");
+            }
+            selectedSeats.add(seat);
+        }
 
-//
-//        private double adjustPriceBasedOnTiming(LocalDateTime showStartTime, double basePrice) {
-//            // Determine the show timing
-//            ShowTimingType showTimingType = getShowTimingType(showStartTime);
-//
-//            switch (showTimingType) {
-//                case MORNING:
-//                    return basePrice * 0.80; // 20% discount for morning shows
-//                case AFTERNOON:
-//                    return basePrice; // Normal price for afternoon shows
-//                case NIGHT:
-//                    return basePrice * 1.20; // 20% surge for night shows
-//                default:
-//                    return basePrice;
-//            }
-//        }
-//
-//        private ShowTimingType getShowTimingType(LocalDateTime showStartTime) {
-//            int hour = showStartTime.getHour();
-//
-//            if (hour >= 9 && hour < 12) {
-//                return ShowTimingType.MORNING;
-//            } else if (hour >= 12 && hour < 18) {
-//                return ShowTimingType.AFTERNOON;
-//            } else {
-//                return ShowTimingType.NIGHT;
-//            }
-//        }
+        // 4. Calculate total amount
+        double totalAmount = selectedSeats.stream().mapToDouble(ShowSeat::getPrice).sum();
+        if (totalAmount <= 0) {
+            throw new InvalidRequestException("Invalid total amount calculation.");
+        }
 
+        // 5. Create Ticket (PENDING)
+        Ticket ticket = new Ticket();
+        ticket.setUser(user);
+        ticket.setShow(show);
+        ticket.setShowSeats(selectedSeats);
+        ticket.setTicketStatus(TicketStatus.PENDING);
+        ticket.setBookingTime(LocalDateTime.now());
+        ticketRepository.save(ticket);
+
+        // 6. Process Payment
+        Payment payment = paymentService.processPayment(ticket, totalAmount, PaymentType.valueOf(bookingRequest.getPaymentType()));
+        if (payment.getPaymentStatus() == PaymentStatus.FAILED) {
+            throw new ResourceNotFoundException("Payment failed! Booking cannot be completed.");
+        }
+
+        // Link Payment & Confirm Ticket
+        payment.setTicket(ticket);
+        ticket.setPayment(payment);
+        ticket.setTicketStatus(TicketStatus.BOOKED);
+        ticketRepository.save(ticket);
+
+        // 7. Mark seats as booked
+        selectedSeats.forEach(seat -> seatService.bookSeat(seat.getSeatId()));
+
+        // 8. Return Response
+        return new TicketResponseDTO(
+                ticket.getTicketId(),
+                user.getUserId(),
+                movie.getTitle(),
+                show.getStartTime(),
+                selectedSeats.stream().map(ShowSeat::getSeatNumber).collect(Collectors.toList()),
+                totalAmount,
+                payment.getPaymentStatus()
+        );
+    }
 }

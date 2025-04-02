@@ -24,19 +24,14 @@ public class MovieController {
         return new ResponseEntity<>(movieService.getAllMovies(), HttpStatus.OK);
     }
 
-    @GetMapping("/{title}")
-    public ResponseEntity<?> getMovieByTitle(@PathVariable String title){
-        return new ResponseEntity<>(movieService.getMovieByTitle(title), HttpStatus.OK);
-    }
-
     @PutMapping("/{title}")
     public ResponseEntity<?> updateMovie(@PathVariable String title, @RequestBody MovieDTO movieDTO){
         return new ResponseEntity<>(movieService.updateMovie(title, movieDTO), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{title}")
-    public ResponseEntity<?> deleteMovie(@PathVariable String title){
-        movieService.deleteMovie(title);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteMovie(@PathVariable Long id){
+        movieService.deleteMovie(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

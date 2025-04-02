@@ -1,15 +1,14 @@
 package com.devesh.bookmyshow.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "screen_detail")
+@Table(name = "screen")
 public class Screen {
 
     @Id
@@ -24,7 +23,6 @@ public class Screen {
     private Theater theater;
 
     @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<Show> shows;
 
     @OneToOne(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)

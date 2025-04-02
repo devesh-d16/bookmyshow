@@ -5,15 +5,17 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class ShowResponseDTO {
+
     private Long showId;
     private String movieName;
     private String screenName;
     private LocalDateTime startTime;
     private LocalDateTime endingTime;
     private List<ShowSeatDTO> showSeats;
+
 }

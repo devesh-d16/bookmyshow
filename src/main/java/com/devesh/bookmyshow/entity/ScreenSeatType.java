@@ -1,14 +1,12 @@
 package com.devesh.bookmyshow.entity;
 
 import com.devesh.bookmyshow.enums.SeatType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 @Entity
+@Table(name = "screen_seat_type")
 public class ScreenSeatType {
 
     @Id
@@ -17,7 +15,6 @@ public class ScreenSeatType {
 
     @ManyToOne
     @JoinColumn(name = "screen_seat_id", nullable = false)
-    @JsonIgnore
     private ScreenSeat screenSeat;
 
     @Enumerated(EnumType.STRING)

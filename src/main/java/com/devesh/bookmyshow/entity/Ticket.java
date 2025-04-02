@@ -1,16 +1,15 @@
 package com.devesh.bookmyshow.entity;
 
+import com.devesh.bookmyshow.enums.TicketStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
-@Table(name = "ticket_detail")
+@Data
 @Entity
+@Table(name = "ticket")
 public class Ticket {
 
     @Id
@@ -29,13 +28,17 @@ public class Ticket {
     private List<ShowSeat> showSeats;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL)
     private Payment payment;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private TicketStatus ticketStatus;
+
     @ManyToOne
-    @JoinColumn(name = "show_id", nullable = false)
-    private Show show; // FIXED: Removed redundant theater & screen references
+    @JoinColumn(name = "show_id")
+    private Show show;
 }

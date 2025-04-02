@@ -4,10 +4,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
+@Builder
 public class ShowDTO {
     private Long movieId;
     private Long screenId;

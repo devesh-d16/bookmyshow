@@ -11,4 +11,8 @@ public interface TheaterRepository extends JpaRepository<Theater, Long> {
     Theater getTheaterByTheaterName(String theaterName);
 
     Theater getTheaterByTheaterId(Long theaterId);
+
+    Theater findTheaterByTheaterId(Long theaterId);
+
+    void deleteByTheaterId(Long theaterId);
 }
