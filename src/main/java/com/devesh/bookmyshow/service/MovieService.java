@@ -24,7 +24,6 @@ public class MovieService {
     public Movie create(MovieDTO movieDTO) {
         Movie movie = modelMapper.map(movieDTO, Movie.class);
 
-        // Additional validations if needed, e.g., rating range or releaseDate not in the past
         if (movie.getRating() < 0.0 || movie.getRating() > 10.0) {
             throw new InvalidRequestException("Rating must be between 0.0 and 10.0");
         }

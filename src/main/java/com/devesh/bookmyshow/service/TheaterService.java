@@ -37,7 +37,6 @@ public class TheaterService {
 
     @Transactional
     public void deleteTheater(Long theaterId) {
-        // Potentially check if shows are active in the theater
         theaterRepository.deleteByTheaterId(theaterId);
     }
 
@@ -55,14 +54,6 @@ public class TheaterService {
         theater.setTheaterName(theaterDTO.getTheaterName());
 
         return theaterRepository.save(theater);
-    }
-
-    public List<Screen> getAllScreensByTheater(String theaterName) {
-        Theater theater = theaterRepository.getTheaterByTheaterName(theaterName);
-        if (theater == null) {
-            throw new IllegalArgumentException("Theater with name " + theaterName + " not found.");
-        }
-        return theater.getScreens();
     }
 
     public Theater findTheaterById(Long theaterId) {
